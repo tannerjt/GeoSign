@@ -1,0 +1,121 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+
+	<title>GeoSign</title>
+
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<link rel="shortcut icon" type="image/x-icon" href="docs/images/favicon.ico" />
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.2.0/dist/leaflet.css" integrity="sha512-M2wvCLH6DSRazYeZRIm1JnYyh22purTM+FDB5CsyxtQJYeKq83arPe5wgbNmcFXGqiSH2XR8dT/fJISVA1r/zQ==" crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js" integrity="sha512-lInM/apFSqyy1o6s89K4iQUKg6ppXEgsVxT35HbzUupEVRh2Eu9Wdl4tHj7dZO0s1uvplcYGmt3498TtHq+log==" crossorigin=""></script>
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <!-- https://github.com/h2non/jshashes/releases/tag/v1.0.7 -->
+  <script type="text/javascript" src="./lib/hashes.min.js"></script>
+	<style>
+		html, body {
+			height: 100%;
+			margin: 0;
+		}
+		#map {
+			width: 100%;
+			height: 100%;
+		}
+    #validate {
+      position: absolute;
+      bottom: 50px;
+      width: 100%;
+      height: 50px;
+      font-size: 18px;
+      background: steelblue;
+      color: #fff;
+      z-index: 999;
+    }
+    #validate:hover {
+      cursor: pointer;
+    }
+	</style>
+
+
+</head>
+<body>
+
+<div id='map'></div>
+
+<button type="button" name="button" id="validate">Validate Against Registered Authoritative Data</button>
+
+<script src="./data/schools.geojson" type="text/javascript"></script>
+
+<script>
+	var map = L.map('map').setView([39.74739, -105], 13);
+
+	L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
+		maxZoom: 18,
+		attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
+			'<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+			'Imagery © <a href="http://mapbox.com">Mapbox</a>',
+		id: 'mapbox.light'
+	}).addTo(map);
+
+	var layer = L.geoJSON(schools, {
+		pointToLayer: function (feature, latlng) {
+			return L.circleMarker(latlng, {
+				radius: 5,
+				fillColor: "#fff000",
+				color: "#000",
+				weight: 1,
+				opacity: 1,
+				fillOpacity: 0.8
+			});
+		}
+	}).addTo(map);
+
+  map.fitBounds(layer.getBounds());
+
+  $("#validate").on('click', function (e) {
+    //loop through each feature and validate hash
+    layer.eachLayer(function (l) {
+      var valid = false;
+
+      var hash = geomHash(l.feature.geometry.coordinates[1],
+        l.feature.geometry.coordinates[0]);
+
+      $.get("http://localhost:3000/lookup/" + hash, function (d) {
+        if(d.auth) {
+          l.setStyle({
+            radius: 5,
+            fillColor: "#008000",
+            color: "#000",
+            weight: 1,
+            opacity: 1,
+            fillOpacity: 0.8
+          });
+        } else {
+          l.setStyle({
+            radius: 5,
+            fillColor: "#ff0000",
+            color: "#000",
+            weight: 1,
+            opacity: 1,
+            fillOpacity: 0.8
+          });
+        }
+      })
+    });
+  });
+
+  function geomHash(lat, lng) {
+    var SHA256 =  new Hashes.SHA256;
+    var pair = ','.concat(+lat, +lng);
+    return SHA256.hex(pair)
+  }
+
+</script>
+
+
+
+</body>
+</html>
