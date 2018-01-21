@@ -75,11 +75,11 @@ Josh is not in master list
 
 Looking at the example above, you may be wondering why we are hashing anything in the first place.  Can't we just compare the two original strings to see if they are they same?  The answer is yes, but hashes are fixed in length and can represent very large inputs.  For example, a geometry representing a simple curved line could be easily made up of thousands of coordinate pairs.  By hashing the input, we can have a fixed 256 bit output to use in comparison.
 
-The other reason to use hashes is to provide fast lookups.  We can use hash tables to provide constant time O(N ) lookup of hashes.  Even if we store the hashes in a database, we can still achive O(logN) lookup time if we index our hashes.  We can even hash an entire file and see if a while file can be considered autoritative (think checksums).
+The other reason to use hashes is to provide fast lookups.  We can use hash tables to provide constant time O(N ) lookup of hashes.  Even if we store the hashes in a database, we can still achive O(logN) lookup time if we index our hashes.  We can even hash an entire file and see if a whole file can be considered autoritative (think checksums).
 
 ## Spatial Data Formats and Hashing
 
-There are many different formats for storing geospatial data.  Shapefile, file geodatabase, kml, geopackage, spatialite, and geojson are examples of methods for storing and accessing this data.  Generally speaking, we could hash the entire file and check it against a known authoritative hash.  However, to solve the problem of verifying feature level data against known authoritative features, we are primarily interest in two things:
+There are many different formats for storing geospatial data.  Shapefile, file geodatabase, kml, geopackage, spatialite, and geojson are examples for storing and accessing this data.  Generally speaking, we could hash the entire file and check it against a known authoritative hash.  However, to solve the problem of verifying feature level data against known authoritative features, we are primarily interest in two things:
 
 1. A features geometry
 2. Properties associated with a feature
